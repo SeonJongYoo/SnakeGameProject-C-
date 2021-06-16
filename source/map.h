@@ -25,6 +25,8 @@ class Map {
   // 개임맵의 최소 크기는 height = 21, width = 21
   void gameMap(int col = 30, int row = 50);
   void scoreWindow();
+  void missionWindow();
+  
 public:
   Map();
   ~Map();

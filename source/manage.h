@@ -18,6 +18,17 @@ class Manage {
   // Map 클래스 객체와 Snake 클래스의 객체 생성
   Map m;
   Snake s;
+  int currentLen = 0;
+  int mcurrentLen;
+  int maxLen = 0;
+  int growNum = 0;
+  int mgrowNum;
+  int poisonNum = 0;
+  int mpoisonNum;
+  int useGate = 0;
+  int museGate;
+  int gameSec = 0;
+  int level = 1;
 
   // manage.cpp 파일에 설명
   bool checkWall();
@@ -26,6 +37,9 @@ class Manage {
   void takeItem();
   void makeGate();
   void passGate();
+  void setScore();
+  void setMission();
+  void checkLevel();
 public:
   Manage();
   void Run();

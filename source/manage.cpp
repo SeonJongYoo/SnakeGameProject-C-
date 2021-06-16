@@ -1,5 +1,6 @@
 #include "manage.h"
 #include <ctime>
+#include <cmath>
 using namespace std;
 
 Manage::Manage() {
@@ -22,12 +23,12 @@ Manage::Manage() {
 
 // 게임 실행을 위한 함수
 void Manage::Run() {
-  int gate_time = 0; int item_time = 0;
+  int gate_time = 0, item_time = 0;
   while (true) {
     // 일정 시간이 지나면 Gate 생성
     if (gate_time == 10) makeGate();
     // 일정 시간이 지나면 새로운 위치에 item 생성
-    if (item_time == 20) {
+    if (item_time == 50) {
       item_time = 0;
       move(gy, gx);
       addch(' ');
@@ -51,6 +52,13 @@ void Manage::Run() {
       m.overWindow();
       break;
     }
+    if (level == 5) {
+      m.overWindow();
+      break;
+    }
+    setScore();
+    setMission();
+    checkLevel();
     if (gate_time < 20) gate_time++;
     item_time++;
     // 프레임 조절
@@ -147,9 +155,14 @@ void Manage::takeItem() {
   snake_loc sloc = s.getSnakePos();
   if (sloc.x == gx && sloc.y == gy) { // 현재 Snake의 머리 좌표가 Growth item의 좌표와 일치하는 경우
     s.setStatus(1);
+    growNum++;
+    currentLen++;
+    if (maxLen < currentLen) maxLen = currentLen;
     makeGrowItem();
   } else if (sloc.x == px && sloc.y == py) { // 현재 Snake의 머리 좌표가 Poison item의 좌표와 일치하는 경우
     s.setStatus(2);
+    poisonNum++;
+    currentLen--;
     makePoisonItem();
   } else {
     s.setStatus(0);
@@ -198,7 +211,7 @@ void Manage::passGate() {
     // addch('X');
     // attroff(COLOR_PAIR(5));
     // refresh();
-    
+
     //  Gate 통과 시 Snake의 꼬리 부분 지우기
     move(s.snake[s.snake.size()-1].y, s.snake[s.snake.size()-1].x);
     printw(" ");
@@ -234,10 +247,49 @@ void Manage::passGate() {
           s.setDir('U');
       }
     }
+    useGate++;
     move(s.snake[0].y, s.snake[0].x);
     addch(s.snake_shape);
     refresh();
   }
+}
+
+void Manage::setScore() {
+  mvprintw(5, 57,"B: %d", currentLen);
+  mvprintw(6, 57,"+: %d", growNum);
+  mvprintw(7, 57,"-: %d", poisonNum);
+  mvprintw(8, 57,"G: %d", useGate);
+}
+
+void Manage::setMission() {
+  switch(level) {
+    case 1:
+    mcurrentLen = 5; mgrowNum = 2; mpoisonNum = 1; museGate = 1;
+    break;
+    case 2:
+    mcurrentLen = 7; mgrowNum = 3; mpoisonNum = 2; museGate = 3;
+    break;
+    case 3:
+    mcurrentLen = 7; mgrowNum = 5; mpoisonNum = 3; museGate = 2;
+    break;
+    case 4:
+    mcurrentLen = 6; mgrowNum = 7; mpoisonNum = 5; museGate = 5;
+    break;
+  }
+}
+
+void Manage::checkLevel() {
+  mvprintw(17, 57,"level: %d", level);
+  if (currentLen >= mcurrentLen) mvprintw(18, 57,"B: %d ( V )", mcurrentLen);
+  else mvprintw(18, 57,"B: %d (   )", mcurrentLen);
+  if (growNum >= mgrowNum) mvprintw(19, 57,"+: %d ( V )", mgrowNum);
+  else mvprintw(19, 57,"+: %d (   )", mgrowNum);
+  if (poisonNum >= mpoisonNum) mvprintw(20, 57,"-: %d ( V )", mpoisonNum);
+  else mvprintw(20, 57,"-: %d (   )", mpoisonNum);
+  if (useGate >= museGate) mvprintw(21, 57,"G: %d ( V )", museGate);
+  else mvprintw(21, 57,"G: %d (   )", museGate);
+  if (currentLen >= mcurrentLen && growNum >= mgrowNum &&
+    poisonNum >= mpoisonNum && useGate >= museGate) level++;
 }
 
 // 게임 난이도 조절을 위한 함수 - delay값이 작을수록 속도가 빨라짐

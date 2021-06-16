@@ -25,6 +25,7 @@ Map::Map() {
 
   gameMap(); // 게임맵 생성
   scoreWindow(); // 점수판 생성
+  missionWindow();
 }
 
 Map::~Map() {
@@ -54,9 +55,18 @@ void Map::gameMap(int col, int row) {
 
 // 점수판을 위한 윈도우 생성하고 화면에 출력하는 함수
 void Map::scoreWindow() {
-  swin = newwin(10, 15, 2, 55);
+  swin = newwin(10, 17, 2, 55);
   wattron(swin, COLOR_PAIR(1));
   mvwprintw(swin, 1, 2, "Score Board");
+  wborder(swin, '|', '|', '_', '_', '+', '+', '+', '+');
+  wattroff(swin, COLOR_PAIR(1));
+  wrefresh(swin);
+}
+
+void Map::missionWindow() {
+  swin = newwin(10, 17, 15, 55);
+  wattron(swin, COLOR_PAIR(1));
+  mvwprintw(swin, 1, 2, "Mission Board");
   wborder(swin, '|', '|', '_', '_', '+', '+', '+', '+');
   wattroff(swin, COLOR_PAIR(1));
   wrefresh(swin);
