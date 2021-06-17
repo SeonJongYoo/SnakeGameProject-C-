@@ -19,22 +19,22 @@ class Map {
   // 게임맵 크기 변수
   int Height, Width;
   // 게임맵, 점수판, 게임오버 윈도우를 위한 WINDOW 포인터 타입의 변수 선언
-  WINDOW* gmap;
   WINDOW* swin;
   WINDOW* owin;
   WINDOW* mwin;
   WINDOW* cwin;
-  // col - width, row - height
-  // 게임맵의 최대 크기는 height = 30, width = 50으로 default 값으로 설정
-  // 개임맵의 최소 크기는 height = 21, width = 21
-  void gameMap(int row = 30, int col = 50);
+
   void scoreWindow();
   void missionWindow();
 public:
   std::vector<map_loc> wall;
+  WINDOW* gmap;
 
   Map();
   ~Map();
+  // col - width, row - height
+  // 게임맵의 최대 크기는 height = 30, width = 50으로 default 값으로 설정
+  void gameMap();
   void overWindow();
   void MissionComplete();
   void makeWall(int stage = 3);

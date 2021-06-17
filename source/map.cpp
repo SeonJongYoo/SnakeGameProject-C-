@@ -26,7 +26,6 @@ Map::Map() {
   gameMap(); // 게임맵 생성
   scoreWindow(); // 점수판 생성
   missionWindow();
-  makeWall(3);
 }
 
 Map::~Map() {
@@ -41,10 +40,9 @@ Map::~Map() {
 }
 
 // 게임맵을 위한 윈도우를 생성하고 화면에 출력하는 함수
-// 인자를 통해 게임맵의 크기를 설정할 수 있음 - default: 35, 80
-void Map::gameMap(int row, int col) {
+void Map::gameMap() {
   // 3번 째 인자와 4번 째 인자는 window 시작 위치를 나타냄
-  gmap = newwin(row, col, 2, 2);
+  gmap = newwin(30, 50, 2, 2);
   // 새로 생성한 윈도우에서 Height의 최댓값과 Width의 최댓값을
   // Height변수와 Width변수에 저장한다.
   getmaxyx(gmap, Height, Width);
@@ -102,6 +100,7 @@ void Map::overWindow() {
    wattron(owin, COLOR_PAIR(2));
    // mvwprintw의 좌표는 새로 생성한 윈도우를 기준으로 설정해야 한다.
    mvwprintw(owin, 1, 5, "Game Over");
+   wattroff(owin, COLOR_PAIR(2));
    // 위의 설정 내용을 새로 생성한 윈도우 화면에 출력
    wrefresh(owin);
 }

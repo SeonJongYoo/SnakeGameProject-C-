@@ -8,7 +8,7 @@
 
 class Manage {
   int delay;
-  bool ckWall, ckGate;
+  bool ckWall, ckGate, ckLevel;
   char growth_item, poison_item;
   // gx, gy: Growth Item의 좌표
   // px, py: Poison Item의 좌표
@@ -38,7 +38,6 @@ class Manage {
   void takeItem();
   void makeGate();
   void passGate();
-  void checkGate();
   void checkOuputGate(int col, int row);
   void setScore();
   void setMission();
