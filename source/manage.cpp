@@ -10,12 +10,14 @@ Manage::Manage() {
   ckWall = false;
   // Gate 확인 변수
   ckGate = false;
+  ckLevel = false;
   // 아이템 문자 - Growth: Green, Poison: Red
   growth_item = 'G';
   poison_item = 'P';
   init_pair(3, COLOR_GREEN, COLOR_BLACK);
   init_pair(4, COLOR_RED, COLOR_BLACK);
   init_pair(5, COLOR_YELLOW, COLOR_BLACK); // Gate 색상
+  init_pair(6, COLOR_BLACK, COLOR_WHITE);
   makeGrowItem();
   makePoisonItem();
 }
@@ -47,8 +49,6 @@ void Manage::Run() {
       passGate(); // Gate 통과 시 수행하는 함수
       useGate++;
     }
-    // 매 이동 시마다 Gate를 지나는지 확인
-    //checkGate();
     // 매 이동 시마다 item을 먹었는지 확인하는 함수 호출
     takeItem();
     // 매 이동 시마다 벽에 부딪혔는지 확인하는 함수 호출
@@ -68,43 +68,69 @@ void Manage::Run() {
       m.overWindow();
       time_t total_e_time = time(NULL);
       double total_diff_time = difftime(total_e_time, total_s_time);
+      attron(COLOR_PAIR(6));
       mvprintw(16, 33,"B: %d", currentLen);
       mvprintw(17, 33,"Growth Item Num: %d", growNum);
       mvprintw(18, 33,"Poison Item Num: %d", poisonNum);
       mvprintw(19, 33,"Use Gate Num: %d", useGate);
-      mvprintw(20, 33,"Total Time: %d sec", int(total_diff_time));
+      mvprintw(20, 33,"Play Time: %d sec", int(total_diff_time));
+      attroff(COLOR_PAIR(6));
       break;
     }
-    switch(level) {
-      case 1:
-      setDelay(100000);
-      break;
-      case 2:
-      setDelay(70000);
-      break;
-      case 3:
-      setDelay(50000);
-      break;
-      case 4:
-      setDelay(30000);
-      break;
+    if (!ckLevel) {
+      switch(level) {
+        case 2:
+        move(gate_y1, gate_x1);
+        addch('X');
+        move(gate_y2, gate_x2);
+        addch('Y');
+        refresh();
+        ckLevel = true;
+        gate_time = 0;
+        setDelay(70000);
+        break;
+        case 3:
+        move(gate_y1, gate_x1);
+        addch('X');
+        move(gate_y2, gate_x2);
+        addch('Y');
+        refresh();
+        ckLevel = true;
+        gate_time = 0;
+        m.makeWall();
+        setDelay(50000);
+        break;
+        case 4:
+        move(gate_y1, gate_x1);
+        addch('X');
+        move(gate_y2, gate_x2);
+        addch('Y');
+        refresh();
+        ckLevel = true;
+        gate_time = 0;
+        m.makeWall(4);
+        setDelay(30000);
+        break;
+      }
+      if (level == 5) {
+        m.MissionComplete();
+        time_t total_e_time = time(NULL);
+        double total_diff_time = difftime(total_e_time, total_s_time);
+        attron(COLOR_PAIR(6));
+        mvprintw(16, 33,"B: %d", currentLen);
+        mvprintw(17, 33,"Growth Item Num: %d", growNum);
+        mvprintw(18, 33,"Poison Item Num: %d", poisonNum);
+        mvprintw(19, 33,"Use Gate Num: %d", useGate);
+        mvprintw(20, 33,"Play Time: %d sec", int(total_diff_time));
+        attroff(COLOR_PAIR(6));
+        break;
+      }
     }
 
-    if (level == 5) {
-      m.MissionComplete();
-      time_t total_e_time = time(NULL);
-      double total_diff_time = difftime(total_e_time, total_s_time);
-      mvprintw(16, 33,"B: %d", currentLen);
-      mvprintw(17, 33,"Growth Item Num: %d", growNum);
-      mvprintw(18, 33,"Poison Item Num: %d", poisonNum);
-      mvprintw(19, 33,"Use Gate Num: %d", useGate);
-      mvprintw(20, 33,"Total Time: %d sec", int(total_diff_time));
-      break;
-    }
     setScore();
     setMission();
     checkLevel();
-    if (gate_time < 11) gate_time++;
+    if (gate_time < 12) gate_time++;
     // 프레임 조절
     usleep(delay);
   }
@@ -128,14 +154,6 @@ bool Manage::checkWallNGate() {
   }
   ckGate = false;
   return false;
-}
-
-// Snake의 머리 좌표가 Gate에 해당하는지 확인하는 함수
-void Manage::checkGate() {
-  snake_loc sloc = s.getSnakePos();
-  if ((sloc.y == gate_y1 && sloc.x == gate_x1) || (sloc.y == gate_y2 && sloc.x == gate_x2)) {
-      ckGate = true;
-  }
 }
 
 // Snake의 머리가 몸에 닿는지 확인하는 함수
@@ -266,20 +284,27 @@ void Manage::makeGate() {
     // Gate가 Immune Wall에 나타나는 경우 - 다시 랜덤 추출
     if ((gate_x1 == 2 || gate_x1 == m.getMapPos().x) && (gate_y1 == 2 || gate_y1 == m.getMapPos().y)) continue;
     if ((gate_x2 == 2 || gate_x2 == m.getMapPos().x) && (gate_y2 == 2 || gate_y2 == m.getMapPos().y)) continue;
-    // Gate가 게임맵 경계 안쪽 벽에 나타는 경우 - 진행
-    for (int i = 0; i < m.wall.size(); i++) {
-      if (gate_x1 == m.wall[i].x && gate_y1 == m.wall[i].y) {
-        ck1 = true;
-      }
-      if (gate_x2 == m.wall[i].x && gate_y2 == m.wall[i].y) {
-        ck2 = true;
-      }
-      // 게임맵 경계 안쪽 벽에 Gate 1과 2가 생기는 경우 - 진행
-      if (ck1 && ck2) break;
-    }
-    // Gate가 게임맵 경계 안쪽에 나타나는 경우 - 다시 랜덤 추출
-    if (!ck1 && !ck2) continue;
 
+    // level 3부터 경계 안쪽에 벽이 생긴다.
+    if (level > 2) {
+      // Gate가 게임맵 경계 안쪽 벽에 나타는 경우 - 진행
+      for (int i = 0; i < m.wall.size(); i++) {
+        if (gate_x1 == m.wall[i].x && gate_y1 == m.wall[i].y) {
+          ck1 = true;
+        }
+        if (gate_x2 == m.wall[i].x && gate_y2 == m.wall[i].y) {
+          ck2 = true;
+        }
+        // 게임맵 경계 안쪽 벽에 Gate 1과 2가 생기는 경우 - 진행
+        if (ck1 && ck2) break;
+      }
+      // Gate가 게임맵 경계 안쪽에 나타나는 경우 - 다시 랜덤 추출
+      if (!ck1 && !ck2) continue;
+    } else {
+      // Gate가 게임맵 경계 안쪽에 나타나는 경우 - 다시 랜덤 추출
+      if ((gate_x1 > 2 && gate_x1 < m.getMapPos().x) && (gate_y1 > 2 && gate_y1 < m.getMapPos().y)) continue;
+      if ((gate_x2 > 2 && gate_x2 < m.getMapPos().x) && (gate_y2 > 2 && gate_y2 < m.getMapPos().y)) continue;
+    }
     break;
   }
   move(gate_y1, gate_x1);
@@ -416,7 +441,10 @@ void Manage::checkLevel() {
   if (useGate >= museGate) mvprintw(21, 57,"G: %d ( V )", museGate);
   else mvprintw(21, 57,"G: %d (   )", museGate);
   if (currentLen >= mcurrentLen && growNum >= mgrowNum &&
-    poisonNum >= mpoisonNum && useGate >= museGate) level++;
+    poisonNum >= mpoisonNum && useGate >= museGate) {
+        level++;
+        ckLevel = false;
+    }
 }
 
 
