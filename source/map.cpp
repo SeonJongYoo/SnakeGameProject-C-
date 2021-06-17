@@ -95,19 +95,19 @@ void Map::missionWindow() {
 // Game Over 윈도우를 생성하고 화면에 출력하는 함수
 void Map::overWindow() {
    // newwin을 통해 새로운 윈도우를 생성하기 위한 메모리를 할당 받음
-   owin = newwin(3, 15, 13, 30);
+   owin = newwin(10, 25, 13, 30);
    // 윈도우의 배경색 설정
    wbkgd(owin, COLOR_PAIR(2));
    // 윈도우의 attribute 색상 설정
    wattron(owin, COLOR_PAIR(2));
    // mvwprintw의 좌표는 새로 생성한 윈도우를 기준으로 설정해야 한다.
-   mvwprintw(owin, 1, 3, "Game Over");
+   mvwprintw(owin, 1, 5, "Game Over");
    // 위의 설정 내용을 새로 생성한 윈도우 화면에 출력
    wrefresh(owin);
 }
 
 void Map::MissionComplete() {
-  cwin = newwin(3, 15, 13, 30);
+  cwin = newwin(10, 25, 13, 30);
   wbkgd(cwin, COLOR_PAIR(2));
   wattron(cwin, COLOR_PAIR(2));
   mvwprintw(cwin, 1, 3, "Mission Complete");

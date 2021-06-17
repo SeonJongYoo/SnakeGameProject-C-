@@ -16,20 +16,23 @@ Manage::Manage() {
   init_pair(3, COLOR_GREEN, COLOR_BLACK);
   init_pair(4, COLOR_RED, COLOR_BLACK);
   init_pair(5, COLOR_YELLOW, COLOR_BLACK); // Gate 색상
-
   makeGrowItem();
   makePoisonItem();
 }
 
 // 게임 실행을 위한 함수
 void Manage::Run() {
-  int gate_time = 0; int item_time = 0;
+  int gate_time = 0;
+  time_t total_s_time = time(NULL);
+  time_t start_time = time(NULL);
   while (true) {
     // 일정 시간이 지나면 Gate 생성
+    time_t now_time = time(NULL);
+    double diff_time = difftime(now_time, start_time);
     if (gate_time == 10) makeGate();
     // 일정 시간이 지나면 새로운 위치에 item 생성
-    if (item_time == 50) {
-      item_time = 0;
+    if (diff_time >= 5) {
+      start_time = time(NULL);
       move(gy, gx);
       addch(' ');
       move(py, px);
@@ -42,7 +45,10 @@ void Manage::Run() {
     if (!ckGate) s.moveSnake();
     else {
       passGate(); // Gate 통과 시 수행하는 함수
+      useGate++;
     }
+    // 매 이동 시마다 Gate를 지나는지 확인
+    //checkGate();
     // 매 이동 시마다 item을 먹었는지 확인하는 함수 호출
     takeItem();
     // 매 이동 시마다 벽에 부딪혔는지 확인하는 함수 호출
@@ -60,17 +66,45 @@ void Manage::Run() {
     // or snake의 길이가 3보다 작아지면 종료 or 머리가 몸에 닿으면 종료
     if (ckWall || s.getDir() == 'Q' || s.snake.size() < 3 || checkBody()) {
       m.overWindow();
+      time_t total_e_time = time(NULL);
+      double total_diff_time = difftime(total_e_time, total_s_time);
+      mvprintw(16, 33,"B: %d", currentLen);
+      mvprintw(17, 33,"Growth Item Num: %d", growNum);
+      mvprintw(18, 33,"Poison Item Num: %d", poisonNum);
+      mvprintw(19, 33,"Use Gate Num: %d", useGate);
+      mvprintw(20, 33,"Total Time: %d sec", int(total_diff_time));
       break;
     }
+    switch(level) {
+      case 1:
+      setDelay(100000);
+      break;
+      case 2:
+      setDelay(70000);
+      break;
+      case 3:
+      setDelay(50000);
+      break;
+      case 4:
+      setDelay(30000);
+      break;
+    }
+
     if (level == 5) {
       m.MissionComplete();
+      time_t total_e_time = time(NULL);
+      double total_diff_time = difftime(total_e_time, total_s_time);
+      mvprintw(16, 33,"B: %d", currentLen);
+      mvprintw(17, 33,"Growth Item Num: %d", growNum);
+      mvprintw(18, 33,"Poison Item Num: %d", poisonNum);
+      mvprintw(19, 33,"Use Gate Num: %d", useGate);
+      mvprintw(20, 33,"Total Time: %d sec", int(total_diff_time));
       break;
     }
-    //setScore();
-    //setMission();
-    //checkLevel();
-    if (gate_time < 12) gate_time++;
-    item_time++;
+    setScore();
+    setMission();
+    checkLevel();
+    if (gate_time < 11) gate_time++;
     // 프레임 조절
     usleep(delay);
   }
@@ -97,12 +131,12 @@ bool Manage::checkWallNGate() {
 }
 
 // Snake의 머리 좌표가 Gate에 해당하는지 확인하는 함수
-// void Manage::checkGate() {
-//   snake_loc sloc = s.getSnakePos();
-//   if ((sloc.y == gate_y1 && sloc.x == gate_x1) || (sloc.y == gate_y2 && sloc.x == gate_x2)) {
-//       ckGate = true;
-//   }
-// }
+void Manage::checkGate() {
+  snake_loc sloc = s.getSnakePos();
+  if ((sloc.y == gate_y1 && sloc.x == gate_x1) || (sloc.y == gate_y2 && sloc.x == gate_x2)) {
+      ckGate = true;
+  }
+}
 
 // Snake의 머리가 몸에 닿는지 확인하는 함수
 bool Manage::checkBody() {
@@ -163,7 +197,8 @@ void Manage::makePoisonItem() {
     px = rand() % m.getMapPos().x + 1;
     py = rand() % m.getMapPos().y + 1;
     // 임의의 점이 게임맵을 벗어나는 경우 - 다시 랜덤 추출
-    if (px <= 2 || px >= m.getMapPos().x || py <= 2 || py >= m.getMapPos().y) continue;
+    if (px <= 2 || px >= m.getMapPos().x || py <= 2 || py >= m.getMapPos().y)
+      continue;
     // 임의의 점이 Snake의 몸체인 경우 - 다시 랜덤 추출
     bool ck = false;
     for (int i = 0; i < s.snake.size(); i++) {
@@ -199,9 +234,13 @@ void Manage::takeItem() {
   snake_loc sloc = s.getSnakePos();
   if (sloc.x == gx && sloc.y == gy) { // 현재 Snake의 머리 좌표가 Growth item의 좌표와 일치하는 경우
     s.setStatus(1);
+    currentLen++;
+    growNum++;
     makeGrowItem();
   } else if (sloc.x == px && sloc.y == py) { // 현재 Snake의 머리 좌표가 Poison item의 좌표와 일치하는 경우
     s.setStatus(2);
+    currentLen--;
+    poisonNum++;
     makePoisonItem();
   } else {
     s.setStatus(0);
@@ -256,8 +295,6 @@ void Manage::makeGate() {
 void Manage::passGate() {
   if ((s.getSnakePos().x == gate_x1 && s.getSnakePos().y == gate_y1) || (s.getSnakePos().x == gate_x2 && s.getSnakePos().y == gate_y2)) {
     //  Gate 통과 시 Snake의 꼬리 부분 지우기
-    //move(s.snake[0].y, s.snake[0].x);
-    //addch('X');
     move(s.snake[s.snake.size()-1].y, s.snake[s.snake.size()-1].x);
     addch(' ');
     refresh();
@@ -360,10 +397,10 @@ void Manage::setMission() {
     mcurrentLen = 7; mgrowNum = 3; mpoisonNum = 2; museGate = 3;
     break;
     case 3:
-    mcurrentLen = 7; mgrowNum = 5; mpoisonNum = 3; museGate = 2;
+    mcurrentLen = 7; mgrowNum = 5; mpoisonNum = 3; museGate = 4;
     break;
     case 4:
-    mcurrentLen = 6; mgrowNum = 7; mpoisonNum = 5; museGate = 5;
+    mcurrentLen = 8; mgrowNum = 7; mpoisonNum = 5; museGate = 5;
     break;
   }
 }

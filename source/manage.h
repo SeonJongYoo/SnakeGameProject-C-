@@ -18,9 +18,9 @@ class Manage {
   // Map 클래스 객체와 Snake 클래스의 객체 생성
   Map m;
   Snake s;
-  int currentLen = 0;
+  int currentLen = 3;
   int mcurrentLen;
-  int maxLen = 0;
+  int maxLen = 3;
   int growNum = 0;
   int mgrowNum;
   int poisonNum = 0;
@@ -38,7 +38,7 @@ class Manage {
   void takeItem();
   void makeGate();
   void passGate();
-  //void checkGate();
+  void checkGate();
   void checkOuputGate(int col, int row);
   void setScore();
   void setMission();
