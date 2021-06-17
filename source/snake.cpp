@@ -15,8 +15,8 @@ Snake::Snake() {
   status = 0;
 
   // 게임맵의 너비와 높이
-  maxwidth = m.getMapPos().y;
-  maxheight = m.getMapPos().x;
+  maxwidth = m.getMapPos().x;
+  maxheight = m.getMapPos().y;
 
   // delay없이 입력을 받도록 설정 - Snake의 모양 출력 가능
   nodelay(stdscr, true);
@@ -28,7 +28,7 @@ Snake::Snake() {
   // Snake의 시작 위치 표시 - 맵의 중간 위치로 설정
   // 현재 게임맵의 height와 width 정보를 이용
   for (int i = 0; i < 3; i++) {
-    snake.push_back(snake_loc(maxheight/2 + i, maxwidth/2));
+    snake.push_back(snake_loc(maxwidth/2 + i, maxheight/2));
   }
 
   // 위에서 설정한 Snake의 위치 좌표에 snake shape인 'O'를 화면에 추가

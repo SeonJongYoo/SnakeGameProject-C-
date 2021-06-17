@@ -26,6 +26,7 @@ Map::Map() {
   gameMap(); // 게임맵 생성
   scoreWindow(); // 점수판 생성
   missionWindow();
+  makeWall(3);
 }
 
 Map::~Map() {
@@ -34,29 +35,47 @@ Map::~Map() {
   delwin(gmap);
   delwin(swin);
   delwin(owin);
+  delwin(mwin);
+  delwin(cwin);
   endwin();
 }
 
 // 게임맵을 위한 윈도우를 생성하고 화면에 출력하는 함수
-// 인자를 통해 게임맵의 크기를 설정할 수 있음 - default: 30, 50
-void Map::gameMap(int col, int row) {
-
+// 인자를 통해 게임맵의 크기를 설정할 수 있음 - default: 35, 80
+void Map::gameMap(int row, int col) {
   // 3번 째 인자와 4번 째 인자는 window 시작 위치를 나타냄
-  gmap = newwin(col, row, 2, 2);
+  gmap = newwin(row, col, 2, 2);
   // 새로 생성한 윈도우에서 Height의 최댓값과 Width의 최댓값을
   // Height변수와 Width변수에 저장한다.
-  getmaxyx(gmap, Width, Height);
+  getmaxyx(gmap, Height, Width);
   wattron(gmap, COLOR_PAIR(1));
   // 게임맵의 경계 설정
-  wborder(gmap, '|', '|', '_', '_', '+', '+', '+', '+');
+  wborder(gmap, 'X', 'X', 'X', 'X', '+', '+', '+', '+');
   wattroff(gmap, COLOR_PAIR(1));
   // 위의 설정 내용을 화면에 출력
   wrefresh(gmap);
 }
 
+// 게임맵 경계 안에 벽 생성 함수
+void Map::makeWall(int stage) {
+  for (int i = 0; i < 15; i++) {
+    move(Height/3, Width/3 + i);
+    wall.push_back(map_loc(Width/3 + i, Height/3));
+    addch('X');
+  }
+  if (stage == 4) {
+    for (int i = 1; i < 10; i++) {
+      move(Height/3 + i, Width/3);
+      wall.push_back(map_loc(Width/3, Height/3 + i));
+      addch('X');
+    }
+  }
+  refresh();
+}
+
 // 점수판을 위한 윈도우 생성하고 화면에 출력하는 함수
 void Map::scoreWindow() {
-  swin = newwin(10, 17, 2, 55);
+  swin = newwin(10, 15, 2, 55);
   wattron(swin, COLOR_PAIR(1));
   mvwprintw(swin, 1, 2, "Score Board");
   wborder(swin, '|', '|', '_', '_', '+', '+', '+', '+');
@@ -88,14 +107,14 @@ void Map::overWindow() {
 }
 
 void Map::MissionComplete() {
-  owin = newwin(3, 15, 13, 30);
-  wbkgd(owin, COLOR_PAIR(2));
-  wattron(owin, COLOR_PAIR(2));
-  mvwprintw(owin, 1, 3, "Mission Complete");
-  wrefresh(owin);
+  cwin = newwin(3, 15, 13, 30);
+  wbkgd(cwin, COLOR_PAIR(2));
+  wattron(cwin, COLOR_PAIR(2));
+  mvwprintw(cwin, 1, 3, "Mission Complete");
+  wrefresh(cwin);
 }
 
 // 게임맵의 끝 좌표 return
 map_loc Map::getMapPos() {
-  return map_loc(Height+1, Width+1);
+  return map_loc(Width+1, Height+1);
 }

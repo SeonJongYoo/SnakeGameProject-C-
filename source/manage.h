@@ -32,11 +32,14 @@ class Manage {
 
   // manage.cpp 파일에 설명
   bool checkWall();
+  bool checkBody();
   void makeGrowItem();
   void makePoisonItem();
   void takeItem();
   void makeGate();
   void passGate();
+  void checkGate();
+  void checkOuputGate(int col, int row);
   void setScore();
   void setMission();
   void checkLevel();
