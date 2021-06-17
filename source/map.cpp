@@ -38,8 +38,9 @@ Map::~Map() {
 }
 
 // 게임맵을 위한 윈도우를 생성하고 화면에 출력하는 함수
-// 인자를 통해 게임맵의 크기를 설정할 수 있음 - default: 21, 21
+// 인자를 통해 게임맵의 크기를 설정할 수 있음 - default: 30, 50
 void Map::gameMap(int col, int row) {
+
   // 3번 째 인자와 4번 째 인자는 window 시작 위치를 나타냄
   gmap = newwin(col, row, 2, 2);
   // 새로 생성한 윈도우에서 Height의 최댓값과 Width의 최댓값을
@@ -64,12 +65,12 @@ void Map::scoreWindow() {
 }
 
 void Map::missionWindow() {
-  swin = newwin(10, 17, 15, 55);
-  wattron(swin, COLOR_PAIR(1));
-  mvwprintw(swin, 1, 2, "Mission Board");
-  wborder(swin, '|', '|', '_', '_', '+', '+', '+', '+');
-  wattroff(swin, COLOR_PAIR(1));
-  wrefresh(swin);
+  mwin = newwin(10, 17, 15, 55);
+  wattron(mwin, COLOR_PAIR(1));
+  mvwprintw(mwin, 1, 2, "Mission Board");
+  wborder(mwin, '|', '|', '_', '_', '+', '+', '+', '+');
+  wattroff(mwin, COLOR_PAIR(1));
+  wrefresh(mwin);
 }
 
 // Game Over 윈도우를 생성하고 화면에 출력하는 함수
@@ -84,6 +85,14 @@ void Map::overWindow() {
    mvwprintw(owin, 1, 3, "Game Over");
    // 위의 설정 내용을 새로 생성한 윈도우 화면에 출력
    wrefresh(owin);
+}
+
+void Map::MissionComplete() {
+  owin = newwin(3, 15, 13, 30);
+  wbkgd(owin, COLOR_PAIR(2));
+  wattron(owin, COLOR_PAIR(2));
+  mvwprintw(owin, 1, 3, "Mission Complete");
+  wrefresh(owin);
 }
 
 // 게임맵의 끝 좌표 return

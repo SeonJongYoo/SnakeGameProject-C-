@@ -26,7 +26,8 @@ class Map {
   void gameMap(int col = 30, int row = 50);
   void scoreWindow();
   void missionWindow();
-  
+  void MissionComplete();
+
 public:
   Map();
   ~Map();

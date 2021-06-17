@@ -53,7 +53,7 @@ void Manage::Run() {
       break;
     }
     if (level == 5) {
-      m.overWindow();
+      m.MissionComplete();
       break;
     }
     setScore();
