@@ -31,14 +31,14 @@ class Manage {
   int level = 1;
 
   // manage.cpp 파일에 설명
-  bool checkWall();
+  bool checkWallNGate();
   bool checkBody();
   void makeGrowItem();
   void makePoisonItem();
   void takeItem();
   void makeGate();
   void passGate();
-  void checkGate();
+  //void checkGate();
   void checkOuputGate(int col, int row);
   void setScore();
   void setMission();

@@ -15,7 +15,10 @@ Manage::Manage() {
   poison_item = 'P';
   init_pair(3, COLOR_GREEN, COLOR_BLACK);
   init_pair(4, COLOR_RED, COLOR_BLACK);
-  init_pair(5, COLOR_YELLOW, COLOR_WHITE); // Gate 색상
+  init_pair(5, COLOR_YELLOW, COLOR_BLACK); // Gate 색상
+
+  makeGrowItem();
+  makePoisonItem();
 }
 
 // 게임 실행을 위한 함수
@@ -39,14 +42,20 @@ void Manage::Run() {
     if (!ckGate) s.moveSnake();
     else {
       passGate(); // Gate 통과 시 수행하는 함수
-      ckGate = false;
     }
-    // 매 이동 시마다 Gate를 지나는지 확인
-    //checkGate();
     // 매 이동 시마다 item을 먹었는지 확인하는 함수 호출
     takeItem();
     // 매 이동 시마다 벽에 부딪혔는지 확인하는 함수 호출
-    ckWall = checkWall();
+    ckWall = checkWallNGate();
+    if (gate_time > 10 && !ckGate) {
+      move(gate_y1, gate_x1);
+      attron(COLOR_PAIR(5));
+      addch('X');
+      move(gate_y2, gate_x2);
+      addch('Y');
+      attroff(COLOR_PAIR(5));
+      refresh();
+    }
     //벽에 부딪힌 경우 게임 종료 or 현재 입력 방향에 반대 방향키 입력 시 게임 종료
     // or snake의 길이가 3보다 작아지면 종료 or 머리가 몸에 닿으면 종료
     if (ckWall || s.getDir() == 'Q' || s.snake.size() < 3 || checkBody()) {
@@ -57,10 +66,10 @@ void Manage::Run() {
       m.MissionComplete();
       break;
     }
-    setScore();
+    //setScore();
     //setMission();
     //checkLevel();
-    if (gate_time < 11) gate_time++;
+    if (gate_time < 12) gate_time++;
     item_time++;
     // 프레임 조절
     usleep(delay);
@@ -68,7 +77,7 @@ void Manage::Run() {
 }
 
 // Snake가 벽에 부딪혔는지 확인하는 함수
-bool Manage::checkWall() {
+bool Manage::checkWallNGate() {
   // Snake의 머리 좌표
   snake_loc sloc = s.getSnakePos();
   if ((sloc.y == gate_y1 && sloc.x == gate_x1) || (sloc.y == gate_y2 && sloc.x == gate_x2)) {
@@ -88,12 +97,12 @@ bool Manage::checkWall() {
 }
 
 // Snake의 머리 좌표가 Gate에 해당하는지 확인하는 함수
-void Manage::checkGate() {
-  snake_loc sloc = s.getSnakePos();
-  if ((sloc.y == gate_y1 && sloc.x == gate_x1) || (sloc.y == gate_y2 && sloc.x == gate_x2)) {
-      ckGate = true;
-  }
-}
+// void Manage::checkGate() {
+//   snake_loc sloc = s.getSnakePos();
+//   if ((sloc.y == gate_y1 && sloc.x == gate_x1) || (sloc.y == gate_y2 && sloc.x == gate_x2)) {
+//       ckGate = true;
+//   }
+// }
 
 // Snake의 머리가 몸에 닿는지 확인하는 함수
 bool Manage::checkBody() {
@@ -154,8 +163,7 @@ void Manage::makePoisonItem() {
     px = rand() % m.getMapPos().x + 1;
     py = rand() % m.getMapPos().y + 1;
     // 임의의 점이 게임맵을 벗어나는 경우 - 다시 랜덤 추출
-    if (px <= 2 || px >= m.getMapPos().x || py <= 2 || py >= m.getMapPos().y)
-      continue;
+    if (px <= 2 || px >= m.getMapPos().x || py <= 2 || py >= m.getMapPos().y) continue;
     // 임의의 점이 Snake의 몸체인 경우 - 다시 랜덤 추출
     bool ck = false;
     for (int i = 0; i < s.snake.size(); i++) {
@@ -248,6 +256,8 @@ void Manage::makeGate() {
 void Manage::passGate() {
   if ((s.getSnakePos().x == gate_x1 && s.getSnakePos().y == gate_y1) || (s.getSnakePos().x == gate_x2 && s.getSnakePos().y == gate_y2)) {
     //  Gate 통과 시 Snake의 꼬리 부분 지우기
+    //move(s.snake[0].y, s.snake[0].x);
+    //addch('X');
     move(s.snake[s.snake.size()-1].y, s.snake[s.snake.size()-1].x);
     addch(' ');
     refresh();
