@@ -20,13 +20,13 @@ Snake::Snake() {
 
   // delay없이 입력을 받도록 설정 - Snake의 모양 출력 가능
   nodelay(stdscr, true);
+  noecho();
   // 키보드 입력 받기
   keypad(stdscr, true);
-  noecho();
   curs_set(0);
 
   // Snake의 시작 위치 표시 - 맵의 중간 위치로 설정
-  // 현재 게임맵의 height와 width 정보를 이용
+  // 현재 게임 맵의 height와 width 정보를 이용
   for (int i = 0; i < 3; i++) {
     snake.push_back(snake_loc(maxwidth/2 + i, maxheight/2));
   }

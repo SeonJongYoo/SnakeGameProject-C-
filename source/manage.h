@@ -15,6 +15,7 @@ class Manage {
   int gx, gy, px, py;
   // 한 쌍의 gate 좌표
   int gate_x1, gate_y1, gate_x2, gate_y2;
+  int bgate_x1, bgate_y1, bgate_x2, bgate_y2;
   // Map 클래스 객체와 Snake 클래스의 객체 생성
   Map m;
   Snake s;
@@ -39,6 +40,7 @@ class Manage {
   void makeGate();
   void passGate();
   void checkOuputGate(int col, int row);
+  void resetGate();
   void setScore();
   void setMission();
   void checkLevel();

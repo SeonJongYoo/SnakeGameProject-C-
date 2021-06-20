@@ -4,6 +4,7 @@
 using namespace std;
 
 Manage::Manage() {
+  bgate_x1 = 0; bgate_y1 = 0; bgate_x2 = 0; bgate_y2 = 0;
   // 기본 프레임 설정
   delay = 100000;
   // 벽 확인 변수
@@ -24,7 +25,7 @@ Manage::Manage() {
 
 // 게임 실행을 위한 함수
 void Manage::Run() {
-  int gate_time = 0;
+  int gate_time = 0; int temp = 0;
   time_t total_s_time = time(NULL);
   time_t start_time = time(NULL);
   while (true) {
@@ -53,6 +54,8 @@ void Manage::Run() {
     takeItem();
     // 매 이동 시마다 벽에 부딪혔는지 확인하는 함수 호출
     ckWall = checkWallNGate();
+    // Snake가 Gate를 통과할 때마다 Gate가 사라지는 현상 발생
+    // - Gate가 매 프레임마다 같은 위치에 생성되도록
     if (gate_time > 10 && !ckGate) {
       move(gate_y1, gate_x1);
       attron(COLOR_PAIR(5));
@@ -75,61 +78,74 @@ void Manage::Run() {
       mvprintw(19, 33,"Use Gate Num: %d", useGate);
       mvprintw(20, 33,"Play Time: %d sec", int(total_diff_time));
       attroff(COLOR_PAIR(6));
+      refresh();
       break;
     }
-    if (!ckLevel) {
-      switch(level) {
-        case 2:
-        move(gate_y1, gate_x1);
-        addch('X');
-        move(gate_y2, gate_x2);
-        addch('Y');
-        refresh();
-        ckLevel = true;
-        gate_time = 0;
-        setDelay(70000);
-        break;
-        case 3:
-        move(gate_y1, gate_x1);
-        addch('X');
-        move(gate_y2, gate_x2);
-        addch('Y');
-        refresh();
-        ckLevel = true;
-        gate_time = 0;
-        m.makeWall();
-        setDelay(50000);
-        break;
-        case 4:
-        move(gate_y1, gate_x1);
-        addch('X');
-        move(gate_y2, gate_x2);
-        addch('Y');
-        refresh();
-        ckLevel = true;
-        gate_time = 0;
-        m.makeWall(4);
-        setDelay(30000);
-        break;
-      }
-      if (level == 5) {
-        m.MissionComplete();
-        time_t total_e_time = time(NULL);
-        double total_diff_time = difftime(total_e_time, total_s_time);
-        attron(COLOR_PAIR(6));
-        mvprintw(16, 33,"B: %d", currentLen);
-        mvprintw(17, 33,"Growth Item Num: %d", growNum);
-        mvprintw(18, 33,"Poison Item Num: %d", poisonNum);
-        mvprintw(19, 33,"Use Gate Num: %d", useGate);
-        mvprintw(20, 33,"Play Time: %d sec", int(total_diff_time));
-        attroff(COLOR_PAIR(6));
-        break;
-      }
-    }
-
     setScore();
     setMission();
     checkLevel();
+    // mission 완료 후 이전 level에서 gate 정보를 저장해둔다.
+    if (ckLevel) {
+      bgate_x1 = gate_x1; bgate_y1 = gate_y1;
+      bgate_x2 = gate_x2; bgate_y2 = gate_y2;
+    }
+    switch(level) {
+      case 2:
+        move(bgate_y1, bgate_x1);
+        addch('X');
+        move(bgate_y2, bgate_x2);
+        addch('X');
+        refresh();
+        if (ckLevel) {
+          resetGate();
+          gate_time = 0;
+          ckLevel = false;
+          setDelay(80000);
+        }
+        break;
+      case 3:
+        move(bgate_y1, bgate_x1);
+        addch('X');
+        move(bgate_y2, bgate_x2);
+        addch('X');
+        refresh();
+        if (ckLevel) {
+          resetGate();
+          gate_time = 0;
+          ckLevel = false;
+          m.makeWall();
+          setDelay(60000);
+        }
+        break;
+      case 4:
+        move(bgate_y1, bgate_x1);
+        addch('X');
+        move(bgate_y2, bgate_x2);
+        addch('X');
+        refresh();
+        if (ckLevel) {
+          resetGate();
+          gate_time = 0;
+          ckLevel = false;
+          m.makeWall(4);
+          setDelay(40000);
+        }
+        break;
+    }
+    if (level == 5) {
+      m.MissionComplete();
+      time_t total_e_time = time(NULL);
+      double total_diff_time = difftime(total_e_time, total_s_time);
+      attron(COLOR_PAIR(6));
+      mvprintw(16, 33,"B: %d", currentLen);
+      mvprintw(17, 33,"Growth Item Num: %d", growNum);
+      mvprintw(18, 33,"Poison Item Num: %d", poisonNum);
+      mvprintw(19, 33,"Use Gate Num: %d", useGate);
+      mvprintw(20, 33,"Play Time: %d sec", int(total_diff_time));
+      attroff(COLOR_PAIR(6));
+      refresh();
+      break;
+    }
     if (gate_time < 12) gate_time++;
     // 프레임 조절
     usleep(delay);
@@ -322,7 +338,7 @@ void Manage::passGate() {
     //  Gate 통과 시 Snake의 꼬리 부분 지우기
     move(s.snake[s.snake.size()-1].y, s.snake[s.snake.size()-1].x);
     addch(' ');
-    refresh();
+    //refresh();
     s.snake.pop_back();
     // 들어간 Gate가 1번 Gate인 경우 - 2번 Gate의 방향으로 나온다.
     if (s.getSnakePos().x == gate_x1) {
@@ -332,12 +348,6 @@ void Manage::passGate() {
     }
     move(s.snake[0].y, s.snake[0].x);
     addch(s.snake_shape);
-    // move(gate_y1, gate_x1);
-    // attron(COLOR_PAIR(5));
-    // addch('X');
-    // move(gate_y2, gate_x2);
-    // addch('Y');
-    // attroff(COLOR_PAIR(5));
     refresh();
   }
 }
@@ -406,27 +416,39 @@ void Manage::checkOuputGate(int col, int row) {
   }
 }
 
+void Manage::resetGate() {
+  bool ck1 = false; bool ck2 = false;
+  for (int i = 0; i < m.wall.size(); i++) {
+    if (m.wall[0].y == bgate_y1 && m.wall[0].x == bgate_x1) ck1 = true;
+    if (m.wall[0].y == bgate_y2 && m.wall[0].x == bgate_x2) ck2 = true;
+    if (ck1 && ck2) break;
+  }
+  if (!ck1) m.wall.push_back(map_loc(bgate_x1, bgate_y1));
+  else if (!ck2) m.wall.push_back(map_loc(bgate_x2, bgate_y2));
+}
+
 void Manage::setScore() {
   mvprintw(5, 57,"B: %d", currentLen);
   mvprintw(6, 57,"+: %d", growNum);
   mvprintw(7, 57,"-: %d", poisonNum);
   mvprintw(8, 57,"G: %d", useGate);
+  refresh();
 }
 
 void Manage::setMission() {
   switch(level) {
     case 1:
-    mcurrentLen = 5; mgrowNum = 2; mpoisonNum = 1; museGate = 1;
-    break;
+      mcurrentLen = 1; mgrowNum = 1; mpoisonNum = 1; museGate = 1;
+      break;
     case 2:
-    mcurrentLen = 7; mgrowNum = 3; mpoisonNum = 2; museGate = 3;
-    break;
+      mcurrentLen = 2; mgrowNum = 2; mpoisonNum = 2; museGate = 3;
+      break;
     case 3:
-    mcurrentLen = 7; mgrowNum = 5; mpoisonNum = 3; museGate = 4;
-    break;
+      mcurrentLen = 3; mgrowNum = 3; mpoisonNum = 3; museGate = 4;
+      break;
     case 4:
-    mcurrentLen = 8; mgrowNum = 7; mpoisonNum = 5; museGate = 5;
-    break;
+      mcurrentLen = 4; mgrowNum = 4; mpoisonNum = 4; museGate = 5;
+      break;
   }
 }
 
@@ -440,11 +462,13 @@ void Manage::checkLevel() {
   else mvprintw(20, 57,"-: %d (   )", mpoisonNum);
   if (useGate >= museGate) mvprintw(21, 57,"G: %d ( V )", museGate);
   else mvprintw(21, 57,"G: %d (   )", museGate);
-  if (currentLen >= mcurrentLen && growNum >= mgrowNum &&
-    poisonNum >= mpoisonNum && useGate >= museGate) {
-        level++;
-        ckLevel = false;
-    }
+  // 현재 Level의 미션 성공
+  if (currentLen >= mcurrentLen && growNum >= mgrowNum && 
+  poisonNum >= mpoisonNum && useGate >= museGate) {
+    level++;
+    ckLevel = true;
+  }
+  refresh();  
 }
 
 

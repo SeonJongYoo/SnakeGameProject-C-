@@ -1,2 +1,2 @@
 all:
-	g++ manage.cpp snake.cpp map.cpp main.cpp -lncurses
+	g++ -g -o main manage.cpp snake.cpp map.cpp main.cpp -lncurses

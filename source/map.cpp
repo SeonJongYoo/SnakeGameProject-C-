@@ -43,7 +43,7 @@ Map::~Map() {
 void Map::gameMap() {
   // 3번 째 인자와 4번 째 인자는 window 시작 위치를 나타냄
   gmap = newwin(30, 50, 2, 2);
-  // 새로 생성한 윈도우에서 Height의 최댓값과 Width의 최댓값을
+  // 새로 생성한 윈도우에서 Height의 길이와 Width의 길이를
   // Height변수와 Width변수에 저장한다.
   getmaxyx(gmap, Height, Width);
   wattron(gmap, COLOR_PAIR(1));
@@ -56,17 +56,21 @@ void Map::gameMap() {
 
 // 게임맵 경계 안에 벽 생성 함수
 void Map::makeWall(int stage) {
-  for (int i = 0; i < 15; i++) {
-    move(Height/3, Width/3 + i);
-    wall.push_back(map_loc(Width/3 + i, Height/3));
-    addch('X');
-  }
-  if (stage == 4) {
-    for (int i = 1; i < 10; i++) {
-      move(Height/3 + i, Width/3);
-      wall.push_back(map_loc(Width/3, Height/3 + i));
-      addch('X');
-    }
+  switch (stage) {
+    case 3:
+      for (int i = 0; i < 15; i++) {
+        wall.push_back(map_loc(Width/3 + i, Height/3));
+        move(Height/3, Width/3 + i);
+        addch('X');
+      }
+      break;
+    case 4:
+      for (int i = 1; i < 10; i++) {
+        wall.push_back(map_loc(Width/3, Height/3 + i));
+        move(Height/3 + i, Width/3);
+        addch('X');
+      }
+      break;
   }
   refresh();
 }
@@ -110,6 +114,7 @@ void Map::MissionComplete() {
   wbkgd(cwin, COLOR_PAIR(2));
   wattron(cwin, COLOR_PAIR(2));
   mvwprintw(cwin, 1, 3, "Mission Complete");
+  wattroff(cwin, COLOR_PAIR(2));
   wrefresh(cwin);
 }
 
